@@ -104,11 +104,7 @@ class galaxy(object):
     
     def get_mass_after_mass_loss(self, redshift_in):
         idx = (np.abs(self.redshift - redshift_in)).argmin()
-        print self.redshift
-        print redshift_in
-        print idx
         weights = get_mass_fraction(self.time[-1]-self.time)
-        print weights
         return(np.cumsum(weights[:idx]*self.time_dt[:idx]*10**9*self.SFR[:idx])[-1])
 
     
