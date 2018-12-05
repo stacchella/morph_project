@@ -11,6 +11,20 @@ Created on November 14, 2018
 
 import numpy as np
 from astropy.cosmology import Planck15 as cosmo
+from astropy.table import Table
+import os
+
+
+path_main = os.environ['SRMP_PATH']
+
+t_mass = Table.read(path_main + 'data/mass_loss_table.dat', format='ascii')
+
+
+def get_mass_fraction(time_list):
+    mass_fraction = []
+    for ii_t in time_list:
+        mass_fraction = np.append(mass_fraction, np.interp(ii_t, t_mass['time'], t_mass['mass_frac']))
+    return(np.array(mass_fraction))
 
 
 def make_SFR_profile(radius, SFR_total, Rs):
@@ -88,5 +102,10 @@ class galaxy(object):
             RM.append(get_size_from_profile(self.radius, profile_collection_cumsum[ii]))
         return(np.array(RM))
     
+    def get_mass_after_mass_loss(self, redshift_in):
+        idx = (np.abs(self.redshift - redshift_in)).argmin()
+        weights = get_mass_fraction(self.time[-1]-self.time)
+        return(np.cumsum(weights[:idx]*self.time_dt[:idx]*10**9*self.SFR[:idx])[-1])
+
     
     
