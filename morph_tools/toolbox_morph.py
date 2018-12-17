@@ -94,13 +94,17 @@ class galaxy(object):
         profile_collection = self.build_mass_profile()
         return(np.sum(profile_collection, axis=0))
     
-    def get_size(self):
+    def get_size(self, redshift_in=np.nan):
         profile_collection = self.build_mass_profile()
         profile_collection_cumsum = np.cumsum(profile_collection, axis=0)
-        RM = []
-        for ii in range(len(self.time_dt)):
-            RM.append(get_size_from_profile(self.radius, profile_collection_cumsum[ii]))
-        return(np.array(RM))
+        if np.isfinite(redshift_in):
+            idx = (np.abs(self.redshift - redshift_in)).argmin()
+            return(get_size_from_profile(self.radius, profile_collection_cumsum[idx]))
+        else:
+            RM = []
+            for ii in range(len(self.time_dt)):
+                RM.append(get_size_from_profile(self.radius, profile_collection_cumsum[ii]))
+            return(np.array(RM))
     
     def get_mass_after_mass_loss(self, redshift_in):
         idx = (np.abs(self.redshift - redshift_in)).argmin()
