@@ -38,8 +38,11 @@ def make_SFR_profile(radius, SFR_total, Rs):
     Output:
         SFRD      : SFR surface density (in Msun/yr/kpc^2)
     '''
-    normalization = SFR_total/(2.0*np.pi*Rs**2)
-    return(normalization*np.exp(-1.0*radius/Rs))
+    if ((SFR_total == 0.0) | (Rs == 0.0)):
+        return(np.zeros(len(radius)))
+    else:
+        normalization = SFR_total/(2.0*np.pi*Rs**2)
+        return(normalization*np.exp(-1.0*radius/Rs))
 
 
 def get_size_from_profile(radius, profile):
@@ -77,6 +80,7 @@ class galaxy(object):
         self.mass = np.cumsum(self.time_dt*10**9*self.SFR)
         self.Rs_params = np.array(Rs_params)
         self.Rs = self.Rs_params[0]*(self.mass/10**10)**self.Rs_params[1]*((self.SFR/self.mass)/10**-10)**self.Rs_params[2]*(1+self.redshift)**self.Rs_params[3]
+        self.Rs[np.isnan(self.Rs)] = 0.0
         self.age = 0.5*self.time_dt[::-1] + np.append(0.0, np.cumsum(self.time_dt[::-1])[:-1])
     
     def build_mass_profile(self):
