@@ -65,6 +65,27 @@ def get_size_from_profile(radius, profile):
     return(np.interp(half_mass, cumulative_from_profile, radius))
 
 
+def get_mass_within_radius(radius, profile, Rmax):
+    '''
+    This function returns the half-mass size of a
+    2d surface density profile.
+    Input:
+        radius     : radial coordinates of profile
+        profile    : surface density profile
+        Rmax       : maximal radius
+    Output:
+        mass       : mass within Rmax
+    '''
+    # calculate cumulative
+    cumulative_from_profile = []
+    for rii in radius:
+        idx = (radius <= rii)
+        cumulative_from_profile = np.append(cumulative_from_profile, np.trapz(2.0*np.pi*radius[idx]*profile[idx], radius[idx]))
+    # get half mass value
+    mass_inR = np.interp(Rmax, radius, cumulative_from_profile)
+    return(mass_inR)
+
+
 
 class galaxy(object):
     
@@ -86,7 +107,7 @@ class galaxy(object):
     def build_mass_profile(self):
         profile_collection = np.zeros((len(self.time_dt), len(self.radius)))
         for ii in np.arange(len(self.time_dt)):
-            profile_collection[ii] = self.time_dt[ii]*make_SFR_profile(self.radius, self.SFR[ii], self.Rs[ii])
+            profile_collection[ii] = 10**9*self.time_dt[ii]*make_SFR_profile(self.radius, self.SFR[ii], self.Rs[ii])
         return(profile_collection)
     
     def get_age_profile(self):
@@ -109,6 +130,18 @@ class galaxy(object):
             for ii in range(len(self.time_dt)):
                 RM.append(get_size_from_profile(self.radius, profile_collection_cumsum[ii]))
             return(np.array(RM))
+    
+    def get_mass_within_R(self, Rmax, redshift_in=np.nan):
+        profile_collection = self.build_mass_profile()
+        profile_collection_cumsum = np.cumsum(profile_collection, axis=0)
+        if np.isfinite(redshift_in):
+            idx = (np.abs(self.redshift - redshift_in)).argmin()
+            return(get_mass_within_radius(self.radius, profile_collection_cumsum[idx], Rmax))
+        else:
+            M = []
+            for ii in range(len(self.time_dt)):
+                M.append(get_mass_within_radius(self.radius, profile_collection_cumsum[ii], Rmax))
+            return(np.array(M))
     
     def get_mass_after_mass_loss(self, redshift_in):
         idx = (np.abs(self.redshift - redshift_in)).argmin()
