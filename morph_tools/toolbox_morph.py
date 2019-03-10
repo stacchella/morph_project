@@ -100,7 +100,7 @@ class galaxy(object):
         self.SFR = np.array(list_SFRtot)
         self.mass = np.cumsum(self.time_dt*10**9*self.SFR)
         self.Rs_params = np.array(Rs_params)
-        self.Rs = self.Rs_params[0]*(self.mass/10**10)**self.Rs_params[1]*((self.SFR/self.mass)/10**-10)**self.Rs_params[2]*(1+self.redshift)**self.Rs_params[3]
+        self.Rs = self.Rs_params[0]*(self.mass/10**10)**self.Rs_params[1]*(1+self.redshift)**self.Rs_params[2]  # ((self.SFR/self.mass)/10**-10)**self.Rs_params[2]
         self.Rs[np.isnan(self.Rs)] = 0.0
         self.age = 0.5*self.time_dt[::-1] + np.append(0.0, np.cumsum(self.time_dt[::-1])[:-1])
     
